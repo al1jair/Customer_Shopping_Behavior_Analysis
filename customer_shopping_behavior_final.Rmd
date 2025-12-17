@@ -1,0 +1,119 @@
+---
+title: "Customer Shopping Behavior"
+author: "Alan Norberto"
+date: "2025-12-12"
+output: html_document
+---
+
+```{r load_packages, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+```
+
+Begin analysis. 
+Disclaimer: Data source and questions are from Kaggle.
+
+```{r import_clean_dataset, include=FALSE}
+customer_shopping_behavior <- read_csv("customer_shopping_behavior_clean.csv")
+```
+
+Cleaned dataset below.
+
+```{r}
+glimpse(customer_shopping_behavior)
+```
+
+
+#### 1. What age group spends the most on purchases?
+
+```{r}
+spending_by_age_group <- customer_shopping_behavior %>%
+  group_by(age_group) %>%
+  summarise(total_spent = sum(purchase_amount_usd, na.rm = TRUE)) %>%
+  arrange(desc(total_spent))
+
+kable(spending_by_age_group)
+
+
+ggplot(spending_by_age_group, aes(x = age_group, y = total_spent)) + geom_col(fill = "darkgreen") +
+  labs(title = "Total Spending by Age Group", x = "Age Group", y = "Total Spending") +
+  theme_minimal()
+```
+
+
+#### 2. Which product category has the highest total revenue?
+
+```{r}
+spending_by_category <- customer_shopping_behavior %>% 
+  group_by(category) %>%
+  summarise(total_spent = sum(purchase_amount_usd)) %>%
+  arrange(desc(total_spent))
+
+kable(spending_by_category)
+
+
+ggplot(spending_by_category, aes(x = category, y = total_spent)) +
+  geom_col(fill = "darkgreen") +
+  labs(title = "Spending by Category", x = "Category", y = "Total Spent") +
+  theme_minimal()
+```
+
+
+#### 3. Are customers with a subscription more likely to spend more than non-subscribers?
+
+```{r}
+purchases_based_on_subscription <- customer_shopping_behavior %>%
+  group_by(subscription_status) %>%   
+  summarise(avg_spent = mean(purchase_amount_usd),
+            total_spent = sum(purchase_amount_usd),
+            num_of_purchases = n())
+
+kable(purchases_based_on_subscription)
+
+ggplot(purchases_based_on_subscription, aes(x = subscription_status, y = total_spent)) +
+  geom_col(fill = "darkgreen") +
+  labs(title = "Total Spent Based on Subscription", x = "Subscription Status", y = "Total Spent") +
+  theme_minimal()
+
+ggplot(purchases_based_on_subscription, aes(x = subscription_status, y = num_of_purchases)) +
+  geom_col(fill = "navy") +
+  labs(title = "Purchases Based on Subscription", x = "Subscription Status", y = "Number of Purchases") +
+  theme_minimal()
+```
+
+
+#### 4. Which U.S. locations generate the most purchases?
+
+```{r}
+spending_by_location <- customer_shopping_behavior %>% 
+  group_by(location) %>% 
+  summarise(total_spent = sum(purchase_amount_usd)) %>% 
+  arrange(desc(total_spent)) %>% 
+  head(5)
+
+kable(spending_by_location)
+
+ggplot(spending_by_location, aes(x = location, y = total_spent)) +
+  geom_col(fill = "darkgreen") +
+  coord_flip() +
+  labs(title = "Top 5 Spending by Location", x = "Location", y = "Total Spent") +
+  theme_minimal()
+```
+
+
+#### 5. What season shows the highest customer spending or purchase frequency?
+
+```{r}
+spending_by_season <- customer_shopping_behavior %>% 
+  group_by(season) %>% 
+  summarise(total_spent = sum(purchase_amount_usd), purchase_count = n()) %>% 
+  arrange(desc(total_spent))
+
+kable(spending_by_season)
+
+ggplot(spending_by_season, aes(x = season, y = total_spent)) +
+  geom_col(fill = "darkgreen") +
+  labs(title = "Seasonal Spending", x = "Season", y = "Total Spent") +
+  theme_minimal()
+```
